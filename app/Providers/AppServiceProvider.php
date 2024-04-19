@@ -33,14 +33,19 @@ class AppServiceProvider extends ServiceProvider
             ]
         ];
 
-        Response::macro('success', function ($data = null, $message, $statusCode = 200) use ($response) {
+        Response::macro('success', function ($data = null, $message, $headers = [], $statusCode = 200,) use ($response) {
             $response['meta']['message'] = $message;
-            return response()->json($response['data'] = $data, $statusCode);
+            $response['data'] = $data;
+            return response()->json($response, $statusCode, $headers);
         });
 
-        Response::macro('validationError', function ($data = null, $message, $statusCode = 422) use ($response) {
+        Response::macro('validationError', function ($message, $statusCode = 422) use ($response) {
             $response['meta']['message'] = $message;
             return response()->json($response, $statusCode);
+        });
+
+        Response::macro('exception', function ($message, $statusCode = 500) use ($response) {
+            return response()->json($response['meta']['message'] = $message ?? __('api.something_went_wrong'), $statusCode);
         });
     }
 }

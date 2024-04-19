@@ -4,19 +4,40 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Auth\LoginRequest;
+use App\Http\Resources\Admin\AdminResource;
+use App\Models\Admin;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
 
 class LoginController extends Controller
 {
     public function login(LoginRequest $request)
     {
-        if (!auth()->attempt($request->validated())) {
-            return Response::validationError(null, __('api.'));
-        }
-        // $token = auth()->user()->createToken('admin')->plainTextToken;
+        try {
+            $admin = Admin::where([
+                ['email', $request->email],
+            ])->withTrashed()->first();
 
-        // return response()->json([
-        //     'token' => $token,
-        // ]);
+            if ($admin->trashed()) return Response::validationError(__('auth.deactivated'));
+
+            if (Hash::check($request->password, $admin->password) === false) return Response::validationError(__('auth.password'));
+
+            $token = $admin->createToken('auth_token')->plainTextToken;
+            return Response::success(new AdminResource($admin), __('api.login'), ['auth_token' => $token]);
+        } catch (\Throwable $th) {
+            return Response::exception($th->getMessage());
+        }
+    }
+
+    public function logout()
+    {
+        try {
+            // Revoke the token that was used to authenticate the current request...
+            request()->user()->currentAccessToken()->delete();
+            return Response::success(null, __('api.logout'));
+        } catch (\Throwable $th) {
+            return Response::exception($th->getMessage());
+        }
     }
 }

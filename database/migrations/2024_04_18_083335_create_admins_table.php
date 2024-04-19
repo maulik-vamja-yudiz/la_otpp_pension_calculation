@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('contact_no')->nullable();
             $table->string('profile')->nullable();
-            $table->enum('is_status', ActiveStatusEnum::options())->default((ActiveStatusEnum::ACTIVE)->value);
+            $table->enum('is_active', ActiveStatusEnum::options())->default((ActiveStatusEnum::ACTIVE)->value);
             $table->string('type')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();

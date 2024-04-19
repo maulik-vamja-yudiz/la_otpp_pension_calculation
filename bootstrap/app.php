@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
@@ -32,10 +34,11 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-
-        $exceptions->render(function (ValidationException $exception) {
-            return Response::validationError(null, $exception->getMessage());
-        });
-
-        //
+        $exceptions
+            ->render(function (ValidationException $exception) {
+                return Response::validationError($exception->getMessage());
+            })
+            ->render(function (AuthenticationException $exception) {
+                return response()->validationError(__('api.token-expired'), HttpResponse::HTTP_UNAUTHORIZED);
+            });
     })->create();
