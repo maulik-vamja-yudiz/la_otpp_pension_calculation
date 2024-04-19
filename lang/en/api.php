@@ -6,4 +6,5 @@ return [
     'login' => 'Login Successfully.',
     'token-expired'     => 'Your session has expired. Please log in again.',
     'logout'        => 'Logout Successfully.',
+    'get'      => ':entity details get successfully.',
 ];
