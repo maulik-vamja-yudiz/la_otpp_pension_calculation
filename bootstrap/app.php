@@ -35,10 +35,12 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions
-            ->render(function (ValidationException $exception) {
-                return Response::validationError($exception->getMessage());
-            })
-            ->render(function (AuthenticationException $exception) {
-                return response()->validationError(__('api.token-expired'), HttpResponse::HTTP_UNAUTHORIZED);
+            ->render(function (\Throwable $exception) {
+                dd($exception);
+                return match (get_class($exception)) {
+                    ValidationException::class => Response::validationError($exception->getMessage()),
+                    AuthenticationException::class => response()->validationError(__('api.token-expired'), HttpResponse::HTTP_UNAUTHORIZED),
+                    default => response()->exception($exception->getMessage())
+                };
             });
     })->create();

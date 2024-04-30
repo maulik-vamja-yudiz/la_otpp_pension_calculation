@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,19 +34,20 @@ class AppServiceProvider extends ServiceProvider
             ]
         ];
 
-        Response::macro('success', function ($data = null, $message, $headers = [], $statusCode = 200,) use ($response) {
+        Response::macro('success', function ($data = null, $message,  $statusCode = HttpResponse::HTTP_OK, $headers = []) use ($response) {
             $response['meta']['message'] = $message;
             $response['data'] = $data;
             return response()->json($response, $statusCode, $headers);
         });
 
-        Response::macro('validationError', function ($message, $statusCode = 422) use ($response) {
+        Response::macro('validationError', function ($message, $statusCode = HttpResponse::HTTP_UNPROCESSABLE_ENTITY) use ($response) {
             $response['meta']['message'] = $message;
             return response()->json($response, $statusCode);
         });
 
-        Response::macro('exception', function ($message, $statusCode = 500) use ($response) {
-            return response()->json($response['meta']['message'] = $message ?? __('api.something_went_wrong'), $statusCode);
+        Response::macro('exception', function ($message, $statusCode = HttpResponse::HTTP_INTERNAL_SERVER_ERROR) use ($response) {
+            $response['meta']['message'] = __('api.something_went_wrong');
+            return response()->json($response, $statusCode);
         });
     }
 }

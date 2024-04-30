@@ -3,11 +3,19 @@
 namespace App\Http\Requests\Admin\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 
-class UpdateProfileRequest extends FormRequest
+class ForgetPasswordRequest extends FormRequest
 {
     protected $stopOnFirstFailure = true;
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'email' => strtolower($this->email),
+        ]);
+    }
 
     /**
      * Determine if the user is authorized to make this request.
@@ -25,10 +33,7 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'full_name'     => ['sometimes', 'nullable', 'string', 'min:3', 'max:255'],
-            'email'         => ['sometimes', 'nullable', 'email', 'unique:admins,email,' . auth()->id()],
-            'contact_no'    => ['sometimes', 'nullable', 'string', 'min:10', 'max:15'],
-            'profile_photo'       => ['sometimes', 'nullable', 'image', 'mimes:jpeg,jpg,png', 'max:2048'],
+            'email' => ['required', 'email', 'exists:admins,email'],
         ];
     }
 }

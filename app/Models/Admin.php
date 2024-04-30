@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Passwords\CanResetPassword as PasswordsCanResetPassword;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 
-class Admin extends Model
+class Admin extends Model implements CanResetPassword
 {
-    use HasFactory, HasUuids, SoftDeletes, HasApiTokens;
+    use HasFactory, HasUuids, SoftDeletes, HasApiTokens, Authenticatable, Notifiable, PasswordsCanResetPassword;
 
     protected $fillable = [
         'full_name',
@@ -39,5 +44,23 @@ class Admin extends Model
         return Attribute::make(
             set: fn ($value) => Hash::make($value),
         );
+    }
+
+    protected function profile(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value = null) => generate_url($value),
+        );
+    }
+
+    // Add the missing methods
+    public function getEmailForPasswordReset()
+    {
+        return $this->email;
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPassword($token));
     }
 }

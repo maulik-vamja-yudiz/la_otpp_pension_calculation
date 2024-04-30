@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Auth\LoginRequest;
 use App\Http\Resources\Admin\AdminResource;
 use App\Models\Admin;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
 
 class LoginController extends Controller
@@ -24,7 +26,7 @@ class LoginController extends Controller
             if (Hash::check($request->password, $admin->password) === false) return Response::validationError(__('auth.password'));
 
             $token = $admin->createToken('auth_token')->plainTextToken;
-            return Response::success(new AdminResource($admin), __('api.login'), ['auth_token' => $token]);
+            return Response::success(new AdminResource($admin), __('api.login'), HttpResponse::HTTP_OK, ['auth_token' => $token]);
         } catch (\Throwable $th) {
             return Response::exception($th->getMessage());
         }
